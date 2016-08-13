@@ -79,11 +79,14 @@ var TyperView = Backbone.View.extend({
 				'z-index':'1000'
 			}).keyup(function() {
 				var words = self.model.get('words');
+				var mistype = true;
+				var minus = 0;
 				for(var i = 0;i < words.length;i++) {
 					var word = words.at(i);
 					var typed_string = $(this).val();
 					var string = word.get('string');
 					if(string.toLowerCase().indexOf(typed_string.toLowerCase()) == 0) {
+						mistype = false;
 						word.set({highlight:typed_string.length});
 						if(typed_string.length == string.length) {
 							$(this).val('');
@@ -92,6 +95,14 @@ var TyperView = Backbone.View.extend({
 						word.set({highlight:0});
 					}
 				}
+				if (mistype == true){
+                    $(this).val('');
+                    var score = self.model.get('score');
+                    minus = 3;
+                    score = score - minus;
+                    if (score < 0) score  = 0;
+                    self.model.set('score', score);
+                } 
 			});
 		var btn_wrapper = $('<div>')
             .css({
