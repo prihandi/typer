@@ -67,6 +67,7 @@ var TyperView = Backbone.View.extend({
 		
 		var self = this;
 		var text_input = $('<input>')
+			.prop('disabled',true)
 			.addClass('form-control')
 			.css({
 				'border-radius':'4px',
@@ -92,6 +93,51 @@ var TyperView = Backbone.View.extend({
 					}
 				}
 			});
+		var btn_wrapper = $('<div>')
+            .css({
+                'position' : 'absolute',
+                'top' : '10px',
+                'width' : '20px',
+                'left' : '20px'
+            });
+        var btn_start = $('<button>')
+            .addClass('btn btn-success')
+            .html('<span class="glyphicon glyphicon-play"></span>')
+            .click(
+                function(){
+                    self.model.start();
+                    btn_start.prop('disabled',true);
+                    btn_pause.prop('disabled',false);
+                    btn_stop.prop('disabled',false);
+                    text_input.prop('disabled',false);
+                    text_input.focus();
+                }
+            );
+        var btn_pause = $('<button>')
+        	.prop('disabled',true)
+            .addClass('btn btn-info')
+            .html('<span class="glyphicon glyphicon-pause"></span>')
+            .click(
+                function(){
+                    self.model.pause();
+                    btn_pause.prop('disabled',true);
+                    btn_start.prop('disabled',false);
+                    text_input.prop('disabled',true);
+                }
+            );
+        var btn_stop = $('<button>',{id:"btn_stop"})
+            .prop('disabled',true)
+            .addClass('btn btn-warning')
+            .html('<span class="glyphicon glyphicon-stop"></span>')
+            .click(
+                function(){
+                    self.model.stop();
+                    btn_pause.prop('disabled',true);
+                    btn_start.prop('disabled',false);
+                    btn_stop.prop('disabled',true);
+                    text_input.prop('disabled',true);
+                }
+            );
 		
 		$(this.el)
 			.append(wrapper
@@ -102,7 +148,12 @@ var TyperView = Backbone.View.extend({
 					.submit(function() {
 						return false;
 					})
-					.append(text_input)));
+					.append(text_input))
+				.append(btn_wrapper
+                    .append(btn_start)
+                    .append(btn_pause)
+                    .append(btn_stop))
+			);
 		
 		text_input.css({left:((wrapper.width() - text_input.width()) / 2) + 'px'});
 		text_input.focus();
@@ -137,6 +188,7 @@ var Typer = Backbone.Model.extend({
 		max_num_words:10,
 		min_distance_between_words:50,
 		words:new Words(),
+		status:null,
 		min_speed:1,
 		max_speed:5
 	},
@@ -151,11 +203,21 @@ var Typer = Backbone.Model.extend({
 	start: function() {
 		var animation_delay = 20;
 		var self = this;
-		setInterval(function() {
+		this.set('status',setInterval(function() {
 			self.iterate();
-		},animation_delay);
+		},animation_delay));
 	},
-	
+    pause: function() {
+        clearInterval(this.get('status'));
+    },
+    stop: function() {
+        var words = this.get('words');
+        var word;
+        while (word = words.first()){
+            word.destroy();
+        };
+        clearInterval(this.get('status'));
+    },  
 	iterate: function() {
 		var words = this.get('words');
 		if(words.length < this.get('max_num_words')) {
