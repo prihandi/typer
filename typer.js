@@ -10,7 +10,7 @@ var Words = Backbone.Collection.extend({
 
 var WordView = Backbone.View.extend({
 	initialize: function() {
-		$(this.el).css({position:'absolute'});
+		$(this.el).css({position:'absolute','white-space' : 'nowrap'});
 		var string = this.model.get('string');
 		var letter_width = 25;
 		var word_width = string.length * letter_width;
@@ -27,7 +27,7 @@ var WordView = Backbone.View.extend({
 						'background-color':'#fff',
 						border:'1px solid #ccc',
 						'text-align':'center',
-						float:'left'
+						'display':'inline-block'
 					})
 					.text(string.charAt(i).toUpperCase()));
 		}
