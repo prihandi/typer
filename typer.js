@@ -98,6 +98,7 @@ var TyperView = Backbone.View.extend({
                 'position' : 'absolute',
                 'top' : '10px',
                 'width' : '20px',
+                'z-index':'1000',
                 'left' : '20px'
             });
         var btn_start = $('<button>')
@@ -125,7 +126,7 @@ var TyperView = Backbone.View.extend({
                     text_input.prop('disabled',true);
                 }
             );
-        var btn_stop = $('<button>',{id:"btn_stop"})
+        var btn_stop = $('<button>')
             .prop('disabled',true)
             .addClass('btn btn-warning')
             .html('<span class="glyphicon glyphicon-stop"></span>')
@@ -138,6 +139,15 @@ var TyperView = Backbone.View.extend({
                     text_input.prop('disabled',true);
                 }
             );
+        var score_el = $('<span>',{text:self.model.get('score')})
+            .css({
+                'font-size':'40px',
+                'position': 'absolute',
+                bottom:'0',
+				'left':'20px',
+				'margin-bottom':'10px'
+            });
+        this.score_el = score_el;
 		
 		$(this.el)
 			.append(wrapper
@@ -153,6 +163,7 @@ var TyperView = Backbone.View.extend({
                     .append(btn_start)
                     .append(btn_pause)
                     .append(btn_stop))
+				.append(score_el)
 			);
 		
 		text_input.css({left:((wrapper.width() - text_input.width()) / 2) + 'px'});
@@ -164,7 +175,7 @@ var TyperView = Backbone.View.extend({
 	render: function() {
 		var model = this.model;
 		var words = model.get('words');
-		
+		this.score_el.text(model.get('score'));
 		for(var i = 0;i < words.length;i++) {
 			var word = words.at(i);
 			if(!word.get('view')) {
@@ -189,6 +200,7 @@ var Typer = Backbone.Model.extend({
 		min_distance_between_words:50,
 		words:new Words(),
 		status:null,
+		score:0,
 		min_speed:1,
 		max_speed:5
 	},
@@ -266,6 +278,9 @@ var Typer = Backbone.Model.extend({
 		}
 		
 		for(var i = 0;i < words_to_be_removed.length;i++) {
+			if (words_to_be_removed[i].get('move_next_iteration') == true){
+                this.set('score',this.get('score') + words_to_be_removed[i].get('string').length)
+            }
 			words.remove(words_to_be_removed[i]);
 		}
 		
